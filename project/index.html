@@ -4,6 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/rokko-warranty.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+
+    <script>
+      // Theme boot (prevents light-theme flash).
+      (function () {
+        try {
+          var mode = localStorage.getItem('rokko-theme') || 'system';
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = mode === 'dark' || (mode === 'system' && prefersDark);
+          var root = document.documentElement;
+          if (isDark) root.classList.add('dark');
+          else root.classList.remove('dark');
+        } catch (e) {
+          // no-op
+        }
+      })();
+    </script>
+
     <title>Rokko — Warranty Tracker</title>
     <meta property="og:image" content="https://bolt.new/static/og_default.png" />
     <meta name="twitter:card" content="summary_large_image" />
