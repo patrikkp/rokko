@@ -5,17 +5,45 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Apple-like neutrals (light) */
+    --bg: 245 245 247; /* #f5f5f7 */
+    --surface: 255 255 255;
+    --surface-2: 250 250 250;
+    --text: 29 29 31; /* #1d1d1f */
+    --text-2: 110 110 115; /* #6e6e73 */
+    --border: 210 210 215; /* #d2d2d7 */
+
+    /* Accent (keep Rokko red) */
+    --accent: 255 49 49;
+  }
+
+  .dark {
+    /* Apple-like neutrals (dark) */
+    --bg: 0 0 0;
+    --surface: 18 18 20;
+    --surface-2: 28 28 30;
+    --text: 245 245 247;
+    --text-2: 161 161 166;
+    --border: 58 58 60;
+
+    --accent: 255 82 82;
+  }
+
   * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  }
-
   html {
     scroll-behavior: smooth;
+    background: rgb(var(--bg));
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: rgb(var(--bg));
+    color: rgb(var(--text));
   }
 
   .font-display {
@@ -32,9 +60,50 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  .ui-text-secondary {
+    color: rgb(var(--text-2));
+  }
+
+  .ui-border {
+    border-color: rgb(var(--border));
+  }
+
+  .ui-surface {
+    background: rgb(var(--surface));
+  }
+
+  .ui-surface-2 {
+    background: rgb(var(--surface-2));
+  }
 }
 
 @layer components {
+  /* Reusable building blocks (we'll gradually refactor views to these) */
+  .ui-card {
+    background: rgb(var(--surface));
+    border: 1px solid rgb(var(--border));
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+
+  .ui-input {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid rgb(var(--border));
+    border-radius: 12px;
+    background: rgb(var(--surface));
+    color: rgb(var(--text));
+    font-size: 0.875rem;
+    outline: none;
+  }
+
+  .ui-input:focus {
+    border-color: rgba(var(--accent), 0.55);
+    box-shadow: 0 0 0 4px rgba(var(--accent), 0.12);
+  }
+
+  /* Keep existing buttons intact for now; we'll replace them with ui-button later. */
   .btn-primary {
     position: relative;
     display: inline-flex;
@@ -84,9 +153,9 @@
     padding: 0.75rem 1.75rem;
     font-size: 0.875rem;
     font-weight: 500;
-    color: rgba(255,255,255,0.55);
+    color: rgba(255, 255, 255, 0.55);
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 4px;
     overflow: hidden;
     transition: color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
@@ -96,7 +165,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: rgba(255,255,255,0.06);
+    background: rgba(255, 255, 255, 0.06);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -107,8 +176,8 @@
   }
 
   .btn-secondary:hover {
-    color: rgba(255,255,255,0.9);
-    border-color: rgba(255,255,255,0.25);
+    color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.25);
     transform: translateY(-1px);
   }
 
