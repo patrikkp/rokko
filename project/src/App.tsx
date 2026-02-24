@@ -3,7 +3,7 @@ import { Menu } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
 import type { Product, Category, ClaimLog } from './lib/database.types';
-import { getWarrantyStatus } from './lib/utils';
+import { getWarrantyStatus, getCategoryIcon } from './lib/utils';
 import { translations, type Lang } from './lib/translations';
 
 import Navbar from './components/Navbar';
@@ -49,6 +49,7 @@ export default function App() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [claims, setClaims] = useState<ClaimLog[]>([]);
   const [loadingData, setLoadingData] = useState(false);
+  const [dataError, setDataError] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -64,29 +65,43 @@ export default function App() {
   }, []);
 
   const loadCategories = useCallback(async () => {
-    const { data } = await supabase.from('categories').select('*').order('name_hr');
+    const { data, error } = await supabase.from('categories').select('*').order('name_hr');
+    if (error) {
+      console.error('Error loading categories:', error.message);
+      return;
+    }
     if (data) setCategories(data);
   }, []);
 
   const loadProducts = useCallback(async () => {
     if (!user) return;
     setLoadingData(true);
-    const { data } = await supabase
+    setDataError(null);
+    const { data, error } = await supabase
       .from('products')
       .select('*')
       .eq('user_id', user.id)
       .eq('is_active', true)
       .order('created_at', { ascending: false });
-    if (data) setProducts(data);
+    if (error) {
+      console.error('Error loading products:', error.message);
+      setDataError('Greška pri učitavanju. Provjeri vezu s internetom ili Supabase konfiguraciju.');
+    } else if (data) {
+      setProducts(data);
+    }
     setLoadingData(false);
   }, [user]);
 
   const loadClaims = useCallback(async (productId: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('claim_logs')
       .select('*')
       .eq('product_id', productId)
       .order('created_at', { ascending: false });
+    if (error) {
+      console.error('Error loading claims:', error.message);
+      return;
+    }
     if (data) setClaims(data);
   }, []);
 
@@ -195,7 +210,19 @@ export default function App() {
 
       {/* Main content */}
       <main className="lg:ml-56 min-h-[calc(100vh-4rem)]">
-        {loadingData && products.length === 0 ? (
+        {dataError ? (
+          <div className="flex items-center justify-center py-32">
+            <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 text-red-700 text-sm max-w-sm text-center">
+              <p>{dataError}</p>
+              <button
+                onClick={loadProducts}
+                className="block mt-3 mx-auto text-xs font-semibold underline hover:no-underline"
+              >
+                Pokušaj ponovo
+              </button>
+            </div>
+          </div>
+        ) : loadingData && products.length === 0 ? (
           <div className="flex items-center justify-center py-32">
             <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
           </div>
@@ -251,8 +278,11 @@ export default function App() {
                     onClick={() => setCurrentView('products')}
                     className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md hover:border-brand-100 transition-all text-left"
                   >
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3" style={{ backgroundColor: `${cat.color}15` }}>
-                      {['📱','🏠','📺','💻','🚗','🔧','⚽','🪑','👕','🎮','🍴','📦'][categories.indexOf(cat)] || '📦'}
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3"
+                      style={{ backgroundColor: `${cat.color}15` }}
+                    >
+                      {getCategoryIcon(cat.icon)}
                     </div>
                     <p className="font-bold text-gray-900 text-sm">{cat.name_hr}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{count} {countLabel}</p>
